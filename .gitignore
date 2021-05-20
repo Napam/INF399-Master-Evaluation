@@ -1,3 +1,34 @@
+#Idk what this is
+.Trash-*
+
+#generated data symlink
+generated_data
+
+# nogit
+nogit*
+
+#vim
+*.swp
+.vim
+.viminfo
+
+# home dir stuff
+.bash_history
+.local
+
+# vscode
+.vscode*
+.devcontainer
+
+# data and models
+*/data
+*/models
+*.pth
+
+
+# own jupyter config
+.jupyter
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
