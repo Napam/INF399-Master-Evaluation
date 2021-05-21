@@ -42,7 +42,8 @@ def animate():
     fig = plt.figure(figsize=(10,10))
     ax1 = fig.add_subplot(2,1,1,projection='3d')
     ax2 = fig.add_subplot(2,1,2)
-    ax2.set_ylabel('IoU')
+    line = ax2.plot([], [], c='k')[0]
+    ax2.set(ylabel='IoU', xlabel='Timestep')
 
     ax1.set_box_aspect([1,1,1]) # IMPORTANT - this is the new, key line
     ax1.set_proj_type('ortho') # OPTIONAL - default is perspective (shown in image above)
@@ -51,19 +52,35 @@ def animate():
     box1 = Box([0,0,0],[1,1,1],[0,0,0])
     box2 = Box([-2,0,0],[3,2,0.5],[0,0,0])
 
-    n_frames = 120
+    n_frames = 240
 
     ious = []
+    x = []
     def update(i):
         print(f'\r\x1b[KFrame: {i+1} / {n_frames}', end="")
-        plot_box(box1, ax1, c='b')
-        plot_box(box2, ax1, c='r')
-        box2.loc[0] += 0.05
-        box2.rot += [0.025,0.04,0.1]
-        box1.loc[0] += 0.01
+        if i < n_frames / 2:
+            ax1.cla()
+            plot_box(box1, ax1, c='b')
+            plot_box(box2, ax1, c='r')
+            box2.loc[0] += 0.05
+            box2.rot += [0.025,0.04,0.1]
+            box1.loc[0] += 0.01
+        else:
+            ax1.cla()
+            plot_box(box1, ax1, c='b')
+            plot_box(box2, ax1, c='r')
+            box2.loc[0] -= 0.05
+            box2.rot -= [0.025,0.04,0.1]
+            box1.loc[0] -= 0.01
+
+
         ious.append(iou(box1,box2))
-        ax2.plot(ious, c='k')
+        x.append(i)
+        line.set_data(x, ious)
+        ax2.set(xlim=(-1,x[-1]), ylim=(min(ious)-0.01, max(ious)+0.01))
         ax1.set(xlabel='x', ylabel='y', zlabel='z', xlim=(-2,2), ylim=(-2,2), zlim=(-2,2))
+        fig.canvas.draw()
+
     anim = FuncAnimation(fig, update, interval=30, frames=n_frames, repeat=False)
     anim.save('test.mp4')
     print()
