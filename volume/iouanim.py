@@ -58,7 +58,6 @@ def animate():
     x = []
     def update(i):
         print(f'\r\x1b[KFrame: {i+1} / {n_frames}', end="")
-<<<<<<< HEAD
         if i < n_frames / 2:
             ax1.cla()
             plot_box(box1, ax1, c='b')
@@ -82,20 +81,6 @@ def animate():
         ax1.set(xlabel='x', ylabel='y', zlabel='z', xlim=(-2,2), ylim=(-2,2), zlim=(-2,2))
         fig.canvas.draw()
 
-=======
-        ax1.cla()
-        ax2.cla()
-        plot_box(box1, ax1, c='b')
-        plot_box(box2, ax1, c='r')
-        box2.loc[0] += 0.05
-        box2.rot += [0.025,0.04,0.1]
-        box1.loc[0] += 0.01
-        ious.append(iou(box1,box2))
-        x.append(i)
-        lineplot.set_data(x,ious)
-        fig.canvas.draw()
-        #ax1.set(xlabel='x', ylabel='y', zlabel='z', xlim=(-2,2), ylim=(-2,2), zlim=(-2,2))
->>>>>>> 58c989c69d933dfc96bb926e7a3b0550c54d7cd0
     anim = FuncAnimation(fig, update, interval=30, frames=n_frames, repeat=False)
     anim.save('test.mp4')
     print()
