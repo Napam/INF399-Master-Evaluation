@@ -3,6 +3,7 @@ FROM pymesh/pymesh:py3.7
 # To export video stuff with matplotlib
 RUN apt-get update && apt-get install -y \
     ffmpeg \
+    vim \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /tmp/
