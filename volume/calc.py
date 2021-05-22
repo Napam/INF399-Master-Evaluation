@@ -4,12 +4,14 @@ from numpy.core.fromnumeric import sort
 import pandas as pd 
 from ioulib import Box, iou, plot_box, get_mesh_from_box
 from matplotlib import pyplot as plt 
-from typing import Iterable, Sequence, Tuple, List, Union
+from typing import Iterable, Optional, Sequence, Tuple, List, Union
 from copy import copy
 import pymesh
 from matplotlib.ticker import NullFormatter
 plt.rcParams.update({'font.family': 'serif', 'mathtext.fontset':'dejavuserif'})
 from debug import debug, debugs, debugt
+from tqdm import tqdm
+from multiprocessing import Pool
 
 
 SPAWNBOX_DIM = np.array((3.5999999046325684, 3.5999999046325684, 3.5999999046325684))
@@ -66,7 +68,7 @@ def set_axes_equal(ax):
     ax.set_zlim3d([z_middle - plot_radius, z_middle + plot_radius])
 
 
-def plot_boxes(df_outputs, df_labels, imgnr):
+def plot_boxes(df_outputs, df_labels, imgnr, thresh: Optional[float] = None):
     outputs = get_meshes_from_df(df_outputs.query("imgnr==@imgnr"))
     labels = get_meshes_from_df(df_labels.query("imgnr==@imgnr"))
     
@@ -129,17 +131,29 @@ def nms_from_df(df_outputs: pd.DataFrame, imgnr: int, threshold: float=0.5):
 
 def _calc_ap(df_outputs: pd.DataFrame, df_labels: pd.DataFrame, threshold: float, results: np.ndarray):
     '''
-    df_outputs and df_labels should only contain boxes respective a single class and a single imgnr
-
     results: np.ndarray, not the whole result matrix, but just for a single class, should use 
-                         custom dtype
-    '''
-    outputs = get_boxes_from_df(df_outputs)
-    labels = get_boxes_from_df(df_labels)
+                         custom dtype. Will be mutated
 
-    for labelbox in labels:
-        for outputbox in outputs:
-            debug(iou(outputbox, labelbox))
+    df_outputs and df_labels should only contain boxes respective a single class and a single imgnr.
+    '''
+    outputboxes = get_boxes_from_df(df_outputs)
+    labelboxes = get_boxes_from_df(df_labels)
+    
+    for labelbox in labelboxes:
+        for i, outputbox in enumerate(outputboxes):
+            iou_ = iou(outputbox, labelbox)
+
+            # True positive
+            if iou_ > threshold:
+                outputboxes.pop(i)
+                results['TP'] += 1
+                break
+        else:
+            # False negative if true box is not predicted
+            results['FN'] += 1
+    
+    # Any remaining outputboxes implies false positives
+    results['FP'] += len(outputboxes)
 
 
 def calc_ap_from_dfs(
@@ -152,8 +166,8 @@ def calc_ap_from_dfs(
     Assumes that unique(df_outputs.imgnr) == unique(df_labels.imgnr)
     '''
     results = np.zeros((n_classes), dtype=np.dtype([('TP', int), ('FP', int), ('FN', int)]))
-
-    for (imgnr, dfLabelImgnr) in df_labels.groupby('imgnr'):
+    tqdmkwargs = {'ascii':True, 'ncols':70, 'desc':f"AP{int(threshold*100)}"}
+    for (imgnr, dfLabelImgnr) in tqdm(df_labels.groupby('imgnr', sort=False), **tqdmkwargs):
         for class_ in range(n_classes):
             dfOuts = df_outputs.query(f"imgnr=={imgnr} & class_=={class_}")
             dfLabels = dfLabelImgnr.query(f"class_=={class_}")
@@ -161,28 +175,49 @@ def calc_ap_from_dfs(
             lenOuts = len(dfOuts)
             lenLabels = len(dfLabels)
 
-            # No predictions, no targets -> Do nothing
+            # No predictions, no labels -> Do nothing
             if (lenOuts + lenLabels) == 0:
                 continue
 
-            # Predictions, but no targets -> False positives
+            # Predictions, but no labels -> False positives
             if (lenOuts > 0) and (lenLabels == 0):
                 results[class_]['FP'] += lenOuts
                 continue
             
-            # No predictions, but there are targets -> False Negatives
+            # No predictions, but there are labels -> False Negatives
             if (lenOuts == 0) and (lenLabels > 0):
                 results[class_]['FN'] += lenLabels
                 continue
 
-            debug(imgnr)
-            debug(class_)
-            _calc_ap(dfOuts, dfLabels, threshold, results[class_])
-            print()
-        # break
+            _calc_ap(dfOuts, dfLabels, threshold, results[class_])            
+    
+    TP, FP, FN = results['TP'].sum(), results['FP'].sum(), results['FN'].sum()
+    precision = TP / (TP + FP)
+    recall = TP / (TP + FN)
+
+    return precision, recall, results
+
 
 if __name__ == '__main__':
     df_outputs = pd.read_csv('nogit_train_output.csv')
     df_labels = pd.read_csv('nogit_train_labels.csv')
-    calc_ap_from_dfs(df_outputs, df_labels, 0.5, 6)
-    # plot_boxes(df_outputs, df_labels, 10)
+    # plot_boxes(df_outputs, df_labels, 60)
+    precision, recall, result =\
+        calc_ap_from_dfs(df_outputs.query("imgnr==60"), df_labels.query("imgnr==60"), 0.5, 6)
+    print(precision)
+    print(recall)
+    print(result)
+
+
+    exit()
+    precisions = []
+    recalls = []
+    results = []
+    threshs = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
+    for thresh in tqdm(threshs, disable=True):
+        precision, recall, result = calc_ap_from_dfs(df_outputs, df_labels, thresh, 6)
+        precisions.append(precision)
+        recalls.append(recall)
+        results.append(result)
+    
+    pd.DataFrame({'thresh':threshs, 'precision':precisions, 'recall':recalls}).to_csv("prcurves.csv", index=False)
