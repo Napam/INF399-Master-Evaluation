@@ -1,0 +1,5 @@
+[user]
+	email = naphat@live.no
+	name = Naphat Amundsen
+[credential]
+	helper = "!f() { /project/.vscode-server/bin/054a9295330880ed74ceaedda236253b4f39a335/node /tmp/vscode-remote-containers-a4df3eb3aa21aa0ef48e7196e23e381d1c5f2435.js $*; }; f"
