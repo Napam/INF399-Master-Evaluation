@@ -179,6 +179,13 @@ class COCOeval:
         gts = self._gts[imgId, catId]
         dts = self._dts[imgId, catId]
         ious = np.zeros((len(dts), len(gts)))
+
+        # Guards taken from computeOks
+        if len(dts) > self.params.maxDets[-1]:
+            dts = dts[0:self.params.maxDets[-1]]
+
+        if len(gts) == 0 or len(dts) == 0:
+            return []
     
         for i, label in enumerate(gts):
             for j, output in enumerate(dts):
@@ -521,10 +528,8 @@ class Params:
         self.iouThrs = np.linspace(.5, 0.95, int(np.round((0.95 - .5) / .05)) + 1, endpoint=True)
         self.recThrs = np.linspace(.0, 1.00, int(np.round((1.00 - .0) / .01)) + 1, endpoint=True)
         self.maxDets = [20]
-        self.areaRng = []
-        self.areaRngLbl = []
-        # self.areaRng = [[0 ** 2, 1e5 ** 2], [32 ** 2, 96 ** 2], [96 ** 2, 1e5 ** 2]]
-        # self.areaRngLbl = ['all', 'medium', 'large']
+        self.areaRng = [[0 ** 2, 1e5 ** 2], [32 ** 2, 96 ** 2], [96 ** 2, 1e5 ** 2]]
+        self.areaRngLbl = ['all', 'medium', 'large']
         self.useCats = 1
         self.kpt_oks_sigmas = np.array([.26, .25, .25, .35, .35, .79, .79, .72, .72, .62,.62, 1.07, 1.07, .87, .87, .89, .89])/10.0
 

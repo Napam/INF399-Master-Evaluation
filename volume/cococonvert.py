@@ -1,11 +1,5 @@
-import numpy as np 
 import pandas as pd 
-from pprint import pprint
 import json 
-
-
-def print_json(string):
-    print(json.dumps(json.loads(string), indent=4))
 
 BOX_COLS = ["x", "y", "z", "w", "l", "h", "rx", "ry", "rz"]
 
@@ -17,7 +11,6 @@ def convert_csv_labels(labels: str):
     df.reset_index(inplace=True)
     df.rename({'index':'id','class_':'category_id', 'imgnr':'image_id'}, axis=1, inplace=True)
 
-    # exit(df.image_id.unique().tolist())
     body = {
         "images": [{'id':id_} for id_ in df.image_id.unique().tolist()],
         "annotations":df.to_dict(orient="records"),
