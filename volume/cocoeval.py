@@ -178,8 +178,6 @@ class COCOeval:
     def computeIoU3D(self, imgId, catId):
         gts = self._gts[imgId, catId]
         dts = self._dts[imgId, catId]
-        ious = np.zeros((len(dts), len(gts)))
-
         # Guards taken from computeOks
         if len(dts) > self.params.maxDets[-1]:
             dts = dts[0:self.params.maxDets[-1]]
@@ -187,6 +185,7 @@ class COCOeval:
         if len(gts) == 0 or len(dts) == 0:
             return []
     
+        ious = np.zeros((len(dts), len(gts)))
         for i, label in enumerate(gts):
             for j, output in enumerate(dts):
                 labelBox = label['bbox3d']

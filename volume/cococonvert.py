@@ -3,7 +3,7 @@ import json
 
 BOX_COLS = ["x", "y", "z", "w", "l", "h", "rx", "ry", "rz"]
 
-def convert_csv_labels(labels: str):
+def convert_csv_labels(labels: str, file: str):
     df = pd.read_csv(labels)
 
     df['bbox3d'] = df[BOX_COLS].values.tolist()
@@ -24,20 +24,20 @@ def convert_csv_labels(labels: str):
         ]
     }
 
-    with open("nogit_coco_labels.json", "w") as f:
+    with open(file, "w") as f:
         json.dump(body, f, indent=4)
 
 
-def convert_csv_outputs(outputs: str):
+def convert_csv_outputs(outputs: str, file: str):
     df = pd.read_csv(outputs)
     
     df['bbox3d'] = df[BOX_COLS].values.tolist()
     df.drop(BOX_COLS, axis=1, inplace=True)
     df.rename({'class_':'category_id', 'imgnr':'image_id', 'conf':'score'}, axis=1, inplace=True)
-    df.to_json("nogit_coco_outputs.json", orient="records")
+    df.to_json(file, orient="records")
 
     
 
 if __name__ == '__main__':
-    convert_csv_labels('nogit_train_labels.csv')
-    convert_csv_outputs('nogit_train_output.csv')
+    convert_csv_labels('nogit_train_labels.csv', "nogit_coco_labels.json")
+    convert_csv_outputs('nogit_train_output.csv', "nogit_coco_outputs.json")

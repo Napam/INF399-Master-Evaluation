@@ -1,15 +1,12 @@
 '''
 Sanity check IoU
 '''
-
-from matplotlib import animation
-from numpy.lib import poly
 import numpy as np 
-from itertools import combinations
 from matplotlib import pyplot as plt 
 from matplotlib.animation import FuncAnimation
 from ioulib import plot_box, iou, Box
-import pymesh
+plt.rcParams.update({'font.family': 'serif', 'mathtext.fontset':'dejavuserif'})
+
 
 def set_axes_equal(ax):
     '''Make axes of 3D plot have equal scale so that spheres appear as spheres,
@@ -73,6 +70,8 @@ def animate():
             box2.rot -= [0.025,0.04,0.1]
             box1.loc[0] -= 0.01
 
+        box1.get_mesh(True)
+        box2.get_mesh(True)
 
         ious.append(iou(box1,box2))
         x.append(i)
@@ -82,7 +81,7 @@ def animate():
         fig.canvas.draw()
 
     anim = FuncAnimation(fig, update, interval=30, frames=n_frames, repeat=False)
-    anim.save('test.mp4')
+    anim.save('iouanim.mp4')
     print()
 
 if __name__=='__main__':

@@ -15,8 +15,8 @@ COPY bashrc /etc/bash.bashrc
 RUN chmod a+rwx /etc/bash.bashrc
 
 # Sets home for EVERYBODY
-WORKDIR /project
-ENV HOME=/project
+WORKDIR /iouproject
+ENV HOME=/iouproject
 
 # Configure user
 ARG user=kanyewest

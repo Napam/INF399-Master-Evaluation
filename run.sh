@@ -24,6 +24,6 @@ ARGS+=${@:$OPTIND}
 
 docker run ${DOCKER_FLAGS} -it --hostname ${HOSTNAME} \
     --user ${USER} \
-    -v "$(pwd)/volume":/project \
+    -v "$(pwd)/volume":/iouproject \
     --rm --name iou-nam012-cntr nam012-iou ${ARGS}
 

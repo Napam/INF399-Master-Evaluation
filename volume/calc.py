@@ -133,7 +133,7 @@ def nms_from_df(df_outputs: pd.DataFrame, imgnr: int, threshold: float=0.5):
 if __name__ == '__main__':
     df_outputs = pd.read_csv('nogit_train_output.csv')
     df_labels = pd.read_csv('nogit_train_labels.csv')
-    plot_boxes(df_outputs, df_labels, 40)   
+    plot_boxes(df_outputs, df_labels, 20)   
     # calc_ap_from_dfs(df_outputs.query("imgnr==42"), df_labels.query("imgnr==42"), 0.95, 6)
     # calc_ap_from_dfs_old(df_outputs.query("imgnr==42"), df_labels.query("imgnr==42"), 0.95, 6)
 
