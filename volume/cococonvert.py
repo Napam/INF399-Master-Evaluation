@@ -1,7 +1,10 @@
 import pandas as pd 
-import json 
+import json
+import os 
+
 
 BOX_COLS = ["x", "y", "z", "w", "l", "h", "rx", "ry", "rz"]
+
 
 def convert_csv_labels(labels: str, file: str):
     df = pd.read_csv(labels)
@@ -30,14 +33,17 @@ def convert_csv_labels(labels: str, file: str):
 
 def convert_csv_outputs(outputs: str, file: str):
     df = pd.read_csv(outputs)
-    
     df['bbox3d'] = df[BOX_COLS].values.tolist()
     df.drop(BOX_COLS, axis=1, inplace=True)
     df.rename({'class_':'category_id', 'imgnr':'image_id', 'conf':'score'}, axis=1, inplace=True)
     df.to_json(file, orient="records")
 
-    
 
 if __name__ == '__main__':
-    convert_csv_labels('nogit_train_labels.csv', "nogit_coco_labels.json")
-    convert_csv_outputs('nogit_train_output.csv', "nogit_coco_outputs.json")
+    mapdir = '/mnt/deepvol/mapdir'
+    import glob 
+    convert_csv_labels(os.path.join(mapdir, "nogit_val_labels.csv"), "jsons/nogit_val_labels.json")
+
+    for dir_ in glob.glob(os.path.join(mapdir, "nogit_output_*.csv")):
+        print(dir_)
+        convert_csv_outputs(dir_, "jsons/"+os.path.basename(dir_).replace('.csv','.json'))

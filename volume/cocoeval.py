@@ -9,6 +9,7 @@ import copy
 from ioulib import iou as iou3D, Box
 from coco import COCO, NOT_IMPLEMENTED_NAPHAT
 from tqdm import tqdm
+        
 
 class COCOeval:
     # Interface for evaluating detection on the Microsoft COCO dataset.
@@ -178,6 +179,7 @@ class COCOeval:
     def computeIoU3D(self, imgId, catId):
         gts = self._gts[imgId, catId]
         dts = self._dts[imgId, catId]
+
         # Guards taken from computeOks
         if len(dts) > self.params.maxDets[-1]:
             dts = dts[0:self.params.maxDets[-1]]
@@ -186,8 +188,8 @@ class COCOeval:
             return []
     
         ious = np.zeros((len(dts), len(gts)))
-        for i, label in enumerate(gts):
-            for j, output in enumerate(dts):
+        for j, label in enumerate(gts):
+            for i, output in enumerate(dts):
                 labelBox = label['bbox3d']
                 labelBox = Box(labelBox[:3], labelBox[3:6], labelBox[6:9])
                 outputBox = output['bbox3d']
@@ -546,9 +548,15 @@ class Params:
         self.useSegm = None
 
 if __name__ == '__main__':
-    cocogt = COCO("nogit_coco_labels.json")
-    cocodt = cocogt.loadRes("nogit_coco_outputs.json")
-    cocoEval = COCOeval(cocogt, cocodt, 'bbox3d')
-    cocoEval.evaluate()
-    cocoEval.accumulate()
-    cocoEval.summarize()
+    import glob, os 
+    mapdir = '/mnt/deepvol/mapdir'
+    cocogt = COCO("jsons/nogit_val_labels.json")
+    for dir_ in glob.glob("jsons/nogit_output_*.json"):
+        print(dir_.upper())
+        cocodt = cocogt.loadRes(dir_)
+        cocoEval = COCOeval(cocogt, cocodt, 'bbox3d')
+        cocoEval.evaluate()
+        cocoEval.accumulate()
+
+        with StdoutRedirection("summaries/"+os.path.basename(dir_).replace('.json', '.txt')):
+            cocoEval.summarize()
