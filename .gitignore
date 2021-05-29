@@ -1,5 +1,6 @@
 #Idk what this is
 .Trash-*
+.gitconfig # Vscode git stuff idk
 
 #generated data symlink
 generated_data
