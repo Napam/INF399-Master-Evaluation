@@ -434,6 +434,8 @@ class COCOeval:
         Compute and display summary metrics for evaluation results.
         Note this functin can *only* be applied on the default parameter setting
         '''
+        # To store AP for each class
+        class_stats = {}
         def _summarize( ap=1, iouThr=None, areaRng='all', maxDets=100 ):
             p = self.params
             iStr = ' {:<18} {} @[ IoU={:<9} | area={:>6s} | maxDets={:>3d} ] = {:0.3f}'
@@ -463,6 +465,11 @@ class COCOeval:
                 mean_s = -1
             else:
                 mean_s = np.mean(s[s>-1])
+
+                #cacluate AP(average precision) for each class
+                if ap == 1:
+                    class_stats[f"AP@[ IoU={iouStr} ]:"] = s.mean(axis=(0,1,3))
+
             print(iStr.format(titleStr, typeStr, iouStr, areaRng, maxDets, mean_s))
             return mean_s
         def _summarizeDets():
@@ -501,6 +508,13 @@ class COCOeval:
         elif iouType == 'keypoints':
             summarize = _summarizeKps
         self.stats = summarize()
+        
+        # Print AP for each class
+        print()
+        for key, classaps in class_stats.items():
+            print(key)
+            for i, classap in enumerate(classaps):
+                print(f"\tClass {i}: {classap}")
 
     def __str__(self):
         self.summarize()
