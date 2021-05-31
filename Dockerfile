@@ -4,6 +4,7 @@ FROM pymesh/pymesh:py3.7
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     vim \
+    screen \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /tmp/
