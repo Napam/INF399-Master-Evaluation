@@ -1,18 +1,12 @@
-from itertools import combinations
-from typing_extensions import final
 import numpy as np
-from numpy.core.fromnumeric import sort 
 import pandas as pd 
 from ioulib import Box, iou, plot_box, get_mesh_from_box
 from matplotlib import pyplot as plt 
 from typing import Iterable, Optional, Sequence, Tuple, List, Union
-from copy import copy
 import pymesh
-from matplotlib.ticker import NullFormatter
 plt.rcParams.update({'font.family': 'serif', 'mathtext.fontset':'dejavuserif'})
 from debug import debug, debugs, debugt
 from tqdm import tqdm
-from multiprocessing import Pool
 import matplotlib.lines as mlines
 
 
@@ -70,7 +64,7 @@ def set_axes_equal(ax):
     ax.set_zlim3d([z_middle - plot_radius, z_middle + plot_radius])
 
 
-def plot_boxes(df_outputs, df_labels, imgnr):
+def plot_boxes(df_outputs, df_labels, imgnr, figname: Optional[str] = None, whole: bool=False):
     outputs = get_meshes_from_df(df_outputs.query("imgnr==@imgnr"))
     labels = get_meshes_from_df(df_labels.query("imgnr==@imgnr"))
     
@@ -78,6 +72,12 @@ def plot_boxes(df_outputs, df_labels, imgnr):
     ax1 = fig.add_subplot(1,3,1,projection='3d')
     ax2 = fig.add_subplot(1,3,2,projection='3d')
     ax3 = fig.add_subplot(1,3,3,projection='3d')
+
+    if whole:
+        # -4, 4 is spawnbox dims
+        ax1.set(xlim=[-4,4],ylim=[-4,4],zlim=[-4,4])
+        ax2.set(xlim=[-4,4],ylim=[-4,4],zlim=[-4,4])
+        ax3.set(xlim=[-4,4],ylim=[-4,4],zlim=[-4,4])
 
     for ax, azim in zip((ax1, ax2, ax3), (0,40,80)):
         for box in outputs:
@@ -102,7 +102,19 @@ def plot_boxes(df_outputs, df_labels, imgnr):
         mlines.Line2D([],[],color='red', linewidth=0.69, label='Predicted'),
         mlines.Line2D([],[],color='k', linewidth=0.69, label='Actual'),
     ], loc='lower center')
-    plt.savefig('boxviz.png')
+
+    if figname is not None:
+        plt.savefig(figname)
+        plt.close()
+    return fig, (ax1, ax2, ax3)
+
+
+def plot_imgnrs(df_outputs, df_labels, imgnrs):
+    for imgnr in imgnrs:
+        fig, _ = plot_boxes(df_outputs, df_labels, imgnr, whole=True)
+        fig.savefig(f"plots/nogit_imgnr{imgnr}_viz_far.png")
+        fig.savefig(f"plots/nogit_imgnr{imgnr}_viz_far.pdf")
+        plt.close()
 
 
 def nms(
@@ -139,11 +151,16 @@ def nms_from_df(df_outputs: pd.DataFrame, imgnr: int, threshold: float=0.5):
 
 if __name__ == '__main__':
     mapdir = '/mnt/deepvol/mapdir/'
-    df_outputs = pd.read_csv(mapdir+'nogit_output_alt.csv')
+    df_outputs = pd.read_csv(mapdir+'nogit_output_regular.csv')
     df_labels = pd.read_csv(mapdir+'nogit_val_labels.csv')
 
-    import time
-    for i in range(100):
-        plot_boxes(df_outputs, df_labels, 59500+i)
-        plt.close()
-        time.sleep(1)
+    # 420 6 9 
+    # plot_boxes(df_outputs, df_labels, 9)
+    plot_imgnrs(df_outputs, df_labels, [420, 6, 9])
+    
+
+    # import time
+    # for i in range(100):
+    #     plot_boxes(df_outputs, df_labels, 59500+i)
+    #     plt.close()
+    #     time.sleep(1)
