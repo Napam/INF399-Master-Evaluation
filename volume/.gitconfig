@@ -2,4 +2,4 @@
 	email = naphat@live.no
 	name = Naphat Amundsen
 [credential]
-	helper = "!f() { /iouproject/.vscode-server/bin/054a9295330880ed74ceaedda236253b4f39a335/node /tmp/vscode-remote-containers-37730f72c212a5c9184a30e3e5cfdea25135d77d.js $*; }; f"
+	helper = "!f() { /iouproject/.vscode-server/bin/b4c1bd0a9b03c749ea011b06c6d2676c8091a70c/node /tmp/vscode-remote-containers-d7d2af4058e539e4c9e01cabd15d001351684951.js $*; }; f"

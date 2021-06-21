@@ -47,7 +47,7 @@ def animate():
     set_axes_equal(ax1) # IMPORTANT - this is also required
     
     box1 = Box([0,0,0],[1,1,1],[0,0,0])
-    box2 = Box([-2,0,0],[3,2,0.5],[0,0,0])
+    box2 = Box([-2,0,0],[1,1,1],[0,0,0])
 
     n_frames = 240
 
@@ -59,15 +59,15 @@ def animate():
             ax1.cla()
             plot_box(box1, ax1, c='b')
             plot_box(box2, ax1, c='r')
-            box2.loc[0] += 0.05
-            box2.rot += [0.025,0.04,0.1]
+            box2.loc[0] += 0.04
+            # box2.rot += [0.025,0.04,0.1]
             box1.loc[0] += 0.01
         else:
             ax1.cla()
             plot_box(box1, ax1, c='b')
             plot_box(box2, ax1, c='r')
-            box2.loc[0] -= 0.05
-            box2.rot -= [0.025,0.04,0.1]
+            box2.loc[0] -= 0.04
+            # box2.rot -= [0.025,0.04,0.1]
             box1.loc[0] -= 0.01
 
         box1.get_mesh(True)
@@ -81,7 +81,7 @@ def animate():
         fig.canvas.draw()
 
     anim = FuncAnimation(fig, update, interval=30, frames=n_frames, repeat=False)
-    anim.save('iouanim.mp4')
+    anim.save('iouanim2.mp4')
     print()
 
 if __name__=='__main__':
